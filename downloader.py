@@ -16,6 +16,7 @@ from tkinter import ttk, filedialog, sys, Tk, N, S, E, W, StringVar, Text, Scrol
 from progressbar import Bar, AdaptiveETA, Percentage, ProgressBar
 
 
+cursePackDownloaderVersion = "0.3.1.3"
 temp_file_name = "curseDownloader-download.temp"
 sess = requests.session()
 erred_mod_downloads = []
@@ -80,7 +81,7 @@ class DownloadUI(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(2, weight=1)
 
-        self.root.title("Curse Pack Downloader")
+        self.root.title("Curse Pack Downloader v%s" % cursePackDownloaderVersion)
 
         self.manifestPath = StringVar()
 
