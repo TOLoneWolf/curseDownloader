@@ -44,7 +44,7 @@ args, unknown = parser.parse_known_args()
 
 # Simplify output text for both console and GUI.
 def print_text(message):
-    message == str(message)
+    message = str(message)
     print(message)  # For the console output
     if args.gui:
         programGui.set_output(message)  # For the GUI output
