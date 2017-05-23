@@ -16,10 +16,58 @@ from tkinter import ttk, filedialog, sys, Tk, N, S, E, W, StringVar, Text, Scrol
 from progressbar import Bar, AdaptiveETA, Percentage, ProgressBar
 
 
-cursePackDownloaderVersion = "0.3.1.3"
+enableTxtProgressBar = True
+cursePackDownloaderVersion = "0.3.1.4"
 temp_file_name = "curseDownloader-download.temp"
 sess = requests.session()
 erred_mod_downloads = []
+print("Version: " + cursePackDownloaderVersion)
+
+
+# This try catch is for windows systems since it's dumb and doesn't know when to switch to GUI or Console :/
+# code snippets from these nice people for figuring it out. just had to add -
+#   "except AttributeError:" block to get it working :)
+# https://stackoverflow.com/questions/2883205/how-can-i-freeze-a-dual-mode-gui-and-console-application-using-cx-freeze
+# http://sebsauvage.net/python/snyppets/
+# https://www.reddit.com/r/learnprogramming/comments/3vq0dm/python_how_can_i_print_text_out_in_the_gui_rather/
+class dummyErrorText:
+    ''' dummyStream behaves like a stream but does nothing. '''
+    def __init__(self): pass
+
+    def write(self, message_data):
+        print_text(message_data)
+
+    def read(self, data): pass
+
+    def flush(self): pass
+
+    def close(self): pass
+
+sys.stderr = dummyErrorText()
+sys.__stderr__ = dummyErrorText()
+
+try:
+    if not sys.stdout.isatty():
+        enableTxtProgressBar = False
+except AttributeError or IOError:
+    class dummyNormalText:
+        ''' dummyStream behaves like a stream but does nothing. '''
+        def __init__(self): pass
+
+        def write(self, data): pass
+
+        def read(self, data): pass
+
+        def flush(self): pass
+
+        def close(self): pass
+
+    # and now redirect all default streams to this dummyStream:
+    sys.stdout = dummyNormalText()
+    sys.stdin = dummyNormalText()
+    sys.__stdout__ = dummyNormalText()
+    sys.__stdin__ = dummyNormalText()
+    enableTxtProgressBar = False
 
 
 compiledExecutable = False
@@ -299,18 +347,21 @@ def do_download(manifest):
             if args.gui:
                 programGui.dl_progress["maximum"] = full_file_size
             # maybe do something
-            pbar.start()
+            if enableTxtProgressBar:
+                pbar.start()
             for chunk in requested_file_sess.iter_content(chunk_size=1024):
                 if dl < full_file_size:
                     dl += len(chunk)
                 elif dl > full_file_size:
                     dl = full_file_size
-                pbar.update(dl)
+                if enableTxtProgressBar:
+                    pbar.update(dl)
                 if args.gui:
                     programGui.dl_progress["value"] = dl
                 if chunk:  # filter out keep-alive new chunks
                     file_data.write(chunk)
-            pbar.finish()
+            if enableTxtProgressBar:
+                pbar.finish()
             if args.gui:
                 programGui.dl_progress["value"] = 0
             file_data.close()

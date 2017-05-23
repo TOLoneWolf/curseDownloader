@@ -40,13 +40,13 @@ if sys.platform == "win32":
     }
     executables_list = [Executable("downloader.py", targetName=curseDownloader, base=base),
                         Executable("updater.py", targetName=manifest_updater, base=base),
-                        Executable("downloader.py", targetName=curseDownloaderCLI, base=None),
-                        Executable("updater.py", targetName=manifest_updaterCLI, base=None)
+                        Executable("downloader.py", targetName=curseDownloaderCLI, base="Console"),
+                        Executable("updater.py", targetName=manifest_updaterCLI, base="Console")
                         ]
 
 setup(
     name='curseDownloader',
-    version='0.3.1.3',
+    version='0.3.1.4',
     author='portablejim',
     # author_email='',
     # packages=[''],
