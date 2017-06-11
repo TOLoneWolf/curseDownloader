@@ -303,15 +303,41 @@ def do_download(manifest):
                 continue
 
         # File is not cached and needs to be downloaded
+
+        temp_mod_file = Path(str(minecraft_path / temp_file_name))
+        if temp_mod_file.exists():
+            os.remove(temp_mod_file)
+
         project_response = sess.get("http://minecraft.curseforge.com/projects/%s"
                                     % (dependency['projectID']), stream=True)
         project_response.url = project_response.url.replace('?cookieTest=1', '')
         file_response = sess.get("%s/files/%s/download"
                                  % (project_response.url, dependency['fileID']), stream=True)
-        global temp_file_name
-        temp_file_name = str(minecraft_path / "curseDownloader-download.temp")
-
         requested_file_sess = sess.get(file_response.url, stream=True)
+
+        remote_url = Path(requested_file_sess.url)
+        file_name = unquote(remote_url.name).split('?')[0]  # If query data strip it and return just the file name.
+        # print_text(str(requested_file_sess.status_code))
+        # print_text(str(requested_file_sess.headers['content-type']))
+        if (requested_file_sess.status_code == 404) or (file_name == "download"):
+            print_text(str("[%d/%d] " + "Trying to resolve using alternate requesting.") % (i, i_len))
+
+            # If curse website fails to provide correct url try Dries API list.
+            # get the json from Dries:
+            metabase = "https://cursemeta.dries007.net"
+            metaurl = "%s/%s/%s.json" % (metabase, dependency['projectID'], dependency['fileID'])
+            r = sess.get(metaurl)
+            r.raise_for_status()
+            main_json = r.json()
+            if "code" in main_json:
+                print_text(str("[%d/%d] " + "ERROR FILE MISSING FROM SOURCE") % (i, i_len))
+                erred_mod_downloads.append(metaurl.url)
+                i += 1
+                continue
+            fileurl = main_json["DownloadURL"]
+            file_name = main_json["FileNameOnDisk"]
+            requested_file_sess = sess.get(fileurl, stream=True)
+
         try:
             full_file_size = int(requested_file_sess.headers.get('content-length'))
             # print_text(str(requested_file_sess.headers['content-length']))
@@ -319,28 +345,11 @@ def do_download(manifest):
             print_text(str("[%d/%d] " + "MISSING FILE SIZE") % (i, i_len))
             full_file_size = 100
 
-        remote_url = Path(requested_file_sess.url)
-        file_name = unquote(remote_url.name).split('?')[0]  # If query data strip it and return just the file name.
-        # print_text(str(requested_file_sess.status_code))
-        # print_text(str(requested_file_sess.headers['content-type']))
-        if requested_file_sess.status_code == 404:
-            print_text(str("[%d/%d] " + "404 ERROR FILE MISSING FROM SOURCE") % (i, i_len))
-            print_text(str(project_response.url) + "/files/" + str(dependency['fileID']) + "/download")
-            erred_mod_downloads.append(str(project_response.url) + "/files/" + str(dependency['fileID']) + "/download")
-            i += 1
-            continue
-        if file_name == "download":
-            print_text(str("[%d/%d] " + "ERROR FILE MISSING FROM SOURCE") % (i, i_len))
-            print_text(str(project_response.url) + "/files/" + str(dependency['fileID']) + "/download")
-            erred_mod_downloads.append(str(project_response.url) + "/files/" + str(dependency['fileID']) + "/download")
-            i += 1
-            continue
-
         print_text(str("[%d/%d] " + file_name +
                    " (DL: " + get_human_readable(full_file_size) + ")") % (i, i_len))
         time.sleep(0.1)
 
-        with open(temp_file_name, 'wb') as file_data:
+        with open(temp_mod_file, 'wb') as file_data:
             dl = 0
             widgets = [Percentage(), Bar(), ' ', AdaptiveETA()]
             pbar = ProgressBar(widgets=widgets, maxval=full_file_size)
@@ -365,7 +374,7 @@ def do_download(manifest):
             if args.gui:
                 programGui.dl_progress["value"] = 0
             file_data.close()
-        shutil.move(temp_file_name, str(mods_path / file_name))  # Rename from temp to correct file name.
+        shutil.move(temp_mod_file, str(mods_path / file_name))  # Rename from temp to correct file name.
 
         # Try to add file to cache.
         if not dep_cache_dir.exists():
@@ -430,6 +439,7 @@ def do_download(manifest):
         erred_mod_downloads.clear()
 
     print_text("Unpacking Complete")
+    sess.close()
 
 
 if args.gui:
