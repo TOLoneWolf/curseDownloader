@@ -17,7 +17,7 @@ from progressbar import Bar, AdaptiveETA, Percentage, ProgressBar
 
 
 enableTxtProgressBar = True
-cursePackDownloaderVersion = "0.3.1.4"
+cursePackDownloaderVersion = "0.3.1.5"
 temp_file_name = "curseDownloader-download.temp"
 sess = requests.session()
 erred_mod_downloads = []

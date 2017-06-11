@@ -46,7 +46,7 @@ if sys.platform == "win32":
 
 setup(
     name='curseDownloader',
-    version='0.3.1.4',
+    version='0.3.1.5',
     author='portablejim',
     # author_email='',
     # packages=[''],
