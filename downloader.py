@@ -304,8 +304,8 @@ def do_download(manifest):
 
         # File is not cached and needs to be downloaded
 
-        temp_mod_file = Path(str(minecraft_path / temp_file_name))
-        if temp_mod_file.exists():
+        temp_mod_file = str(minecraft_path / temp_file_name)
+        if Path(temp_mod_file).exists():
             os.remove(temp_mod_file)
 
         project_response = sess.get("http://minecraft.curseforge.com/projects/%s"
