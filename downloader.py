@@ -17,9 +17,12 @@ from progressbar import Bar, AdaptiveETA, Percentage, ProgressBar
 
 
 enableTxtProgressBar = True
-cursePackDownloaderVersion = "0.3.1.5"
+cursePackDownloaderVersion = "0.3.1.6"
 temp_file_name = "curseDownloader-download.temp"
 sess = requests.session()
+sess.headers.update({
+    'User-Agent': requests.utils.default_user_agent() +
+    ' Python-requests-TOLoneWolf-curseDownloader/' + cursePackDownloaderVersion})
 erred_mod_downloads = []
 print("Version: " + cursePackDownloaderVersion)
 
