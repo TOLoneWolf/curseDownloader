@@ -102,20 +102,23 @@ def print_text(message):
 
 
 def get_human_readable(size, precision=2, requestz=-1):
+    size = float(size)
     suffixes = ['B', 'KB', 'MB', 'GB', 'TB']
     suffix_index = 0
     if requestz == -1:
-        while size > 1024 and suffix_index < 4:
+        while size > 1024.0 and suffix_index < 4:
             suffix_index += 1  # increment the index of the suffix
             size /= 1024.0  # apply the division
-    elif (requestz >= 1 or requestz == 4):
+    else:
+        if requestz > 4:
+            requestz = 4
         i = 0
         while i < requestz:
             suffix_index += 1  # increment the index of the suffix
             size /= 1024.0  # apply the division
             i += 1
 
-    return "%s%s" % (str("{:.3g}".format(round(size, 2))), suffixes[suffix_index])
+    return str(round(size, precision)) + suffixes[suffix_index]
 
 
 class DownloadUI(ttk.Frame):
