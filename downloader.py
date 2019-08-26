@@ -317,7 +317,7 @@ def do_download(manifest):
         project_response = sess.get("http://minecraft.curseforge.com/projects/%s"
                                     % (dependency['projectID']), stream=True)
         project_response.url = project_response.url.replace('?cookieTest=1', '')
-        file_response = sess.get("%s/files/%s/download"
+        file_response = sess.get("%s/download/%s/file"
                                  % (project_response.url, dependency['fileID']), stream=True)
         requested_file_sess = sess.get(file_response.url, stream=True)
 
